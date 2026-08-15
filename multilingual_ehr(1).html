@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多國語言電子病歷｜Multilingual EHR</title>
+<style>
+:root{
+  --blue:#2878e8; --blue2:#62a5ff; --pale:#edf6ff; --pale2:#f7fbff;
+  --ink:#17345c; --muted:#6d819d; --line:#dceaf8; --white:#fff;
+  --shadow:0 12px 35px rgba(42,111,190,.10); --radius:18px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;font-family:Inter,"Noto Sans TC","Microsoft JhengHei",Arial,sans-serif;
+  color:var(--ink);background:linear-gradient(135deg,#eaf5ff,#f9fcff 45%,#e8f3ff);
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.topbar{
+  height:78px;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);display:flex;align-items:center;
+  justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:20;
+}
+.brand{display:flex;align-items:center;gap:13px}
+.logo{
+  width:45px;height:45px;border-radius:14px;display:grid;place-items:center;
+  color:white;background:linear-gradient(145deg,var(--blue),#54a6ff);
+  box-shadow:0 8px 20px rgba(40,120,232,.25);font-size:25px
+}
+.brand h1{font-size:20px;margin:0}.brand small{color:var(--muted)}
+.actions{display:flex;align-items:center;gap:10px}
+.lang{
+  border:1px solid #bcd8f5;background:white;border-radius:12px;padding:10px 12px;
+  color:var(--ink);outline:none
+}
+.privacy{display:flex;gap:7px;align-items:center;color:#4b6e94;font-size:13px}
+.layout{display:flex;max-width:1500px;width:100%;margin:auto;flex:1}
+.sidebar{
+  width:245px;background:rgba(255,255,255,.72);border-right:1px solid var(--line);
+  padding:24px 16px;min-height:calc(100vh - 78px)
+}
+.nav{display:flex;flex-direction:column;gap:7px}
+.nav button{
+  border:0;background:transparent;color:#315276;text-align:left;padding:12px 14px;
+  border-radius:13px;transition:.2s
+}
+.nav button:hover,.nav button.active{background:#e4f1ff;color:#1266cf}
+.nav .export{margin-top:18px;border:1px solid #b9d8f6;color:#176bd2}
+.main{padding:30px;flex:1;min-width:0}
+.hero{
+  background:linear-gradient(120deg,#e1f1ff,#f6fbff);border:1px solid var(--line);
+  border-radius:22px;padding:25px 28px;display:flex;justify-content:space-between;
+  align-items:center;box-shadow:var(--shadow);margin-bottom:22px
+}
+.hero h2{margin:0 0 7px;font-size:25px}.hero p{margin:0;color:var(--muted)}
+.pulse{font-size:65px;opacity:.16}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin:24px 0 12px}
+.section-title h3{margin:0;font-size:18px}.section-title span{color:var(--muted);font-size:13px}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.metric,.card{
+  background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow)
+}
+.metric{padding:18px;display:flex;gap:13px;align-items:center}
+.metric .icon{font-size:25px}.metric small{color:var(--muted)}.metric strong{display:block;font-size:18px;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{padding:20px}.card h4{margin:0 0 12px;font-size:17px;display:flex;gap:9px;align-items:center}
+.card ul{margin:0;padding-left:20px;color:#526d8d;line-height:1.9}.card li::marker{color:#6ba7ed}
+.detail-btn{
+  margin-top:14px;border:1px solid #b8d7f7;background:#f5faff;color:#176bd2;
+  padding:8px 13px;border-radius:10px
+}
+.report{grid-column:1/-1}
+.report-row{display:flex;justify-content:space-between;gap:15px;padding:11px 0;border-bottom:1px solid #edf3f9}
+.report-row:last-child{border-bottom:0}
+.emergency{border-left:4px solid #63a8f5}
+.footer{margin-top:25px;padding:16px;color:#7790ac;font-size:12px;text-align:center}
+.modal{
+  position:fixed;inset:0;background:rgba(18,48,83,.38);display:none;place-items:center;
+  z-index:50;padding:20px
+}
+.modal.show{display:grid}
+.modal-box{width:min(720px,100%);max-height:90vh;overflow:auto;background:white;border-radius:22px;padding:25px;box-shadow:0 25px 70px rgba(20,70,120,.25)}
+.modal-head{display:flex;justify-content:space-between;align-items:center}
+.close{border:0;background:#eef6ff;border-radius:10px;padding:8px 12px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:16px}
+.form label{font-size:13px;color:#617994}.form input,.form textarea{
+  width:100%;margin-top:6px;border:1px solid #cfe1f3;border-radius:10px;padding:10px;outline:none
+}.form textarea{min-height:95px;resize:vertical}.full{grid-column:1/-1}
+.save{margin-top:16px;border:0;background:var(--blue);color:#fff;border-radius:11px;padding:11px 18px}
+.toast{
+  position:fixed;right:22px;bottom:22px;background:#173f6d;color:white;padding:12px 17px;
+  border-radius:12px;opacity:0;transform:translateY(10px);transition:.25s;z-index:80
+}.toast.show{opacity:1;transform:none}
+@media(max-width:900px){
+  .sidebar{width:76px}.nav button{font-size:0;text-align:center}.nav button::first-letter{font-size:21px}
+  .brand small,.privacy{display:none}.metrics{grid-template-columns:1fr 1fr}
+}
+@media(max-width:650px){
+  .topbar{padding:0 15px}.brand h1{font-size:16px}.main{padding:16px}.sidebar{display:none}
+  .metrics,.grid{grid-template-columns:1fr}.report{grid-column:auto}.hero{padding:20px}.pulse{display:none}
+  .form{grid-template-columns:1fr}.full{grid-column:auto}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">♥</div>
+    <div><h1 data-i18n="title">多國語言電子病歷</h1><small>Multilingual Electronic Health Record</small></div>
+  </div>
+  <div class="actions">
+    <select id="language" class="lang" aria-label="Language">
+      <option value="zh">🇹🇼 中文（繁體）</option>
+      <option value="en">🇬🇧 English</option>
+      <option value="ko">🇰🇷 한국어</option>
+      <option value="ja">🇯🇵 日本語</option>
+      <option value="vi">🇻🇳 Tiếng Việt</option>
+    </select>
+    <div class="privacy">🔒 <span data-i18n="privacy">健康資訊僅供本人使用</span></div>
+  </div>
+</header>
+
+<div class="layout">
+<aside class="sidebar">
+  <nav class="nav" id="nav">
+    <button class="active" data-target="overview">⌂　<span data-i18n="overview">總覽</span></button>
+    <button data-target="personal">♙　<span data-i18n="personal">個人資料</span></button>
+    <button data-target="history">▤　<span data-i18n="personalHistory">個人史</span></button>
+    <button data-target="disease">✚　<span data-i18n="disease">疾病史</span></button>
+    <button data-target="family">♧　<span data-i18n="family">家族史</span></button>
+    <button data-target="surgery">✂　<span data-i18n="surgery">手術史</span></button>
+    <button data-target="medication">💊　<span data-i18n="medication">用藥史</span></button>
+    <button data-target="allergy">⚠　<span data-i18n="allergy">過敏史</span></button>
+    <button data-target="reports">▣　<span data-i18n="reports">檢查報告</span></button>
+    <button data-target="vaccines">♟　<span data-i18n="vaccines">預防接種</span></button>
+    <button data-target="lifestyle">♡　<span data-i18n="lifestyle">生活習慣</span></button>
+    <button data-target="emergency">☎　<span data-i18n="emergency">緊急聯絡人</span></button>
+    <button data-target="notes">✎　<span data-i18n="notes">備註</span></button>
+    <button class="export" id="exportBtn">⇩　<span data-i18n="export">匯出／分享</span></button>
+  </nav>
+</aside>
+
+<main class="main" id="overview">
+  <section class="hero">
+    <div><h2 data-i18n="hello">您好，使用者 👋</h2><p><span data-i18n="updated">最後更新</span>：2026/08/15</p></div>
+    <div class="pulse">〰♥〰</div>
+  </section>
+
+  <div class="section-title"><h3 data-i18n="summary">總覽資訊</h3><span data-i18n="demo">範例資料，請替換成自己的資訊</span></div>
+  <section class="metrics">
+    <div class="metric"><div class="icon">♙</div><div><small data-i18n="age">年齡</small><strong>15</strong></div></div>
+    <div class="metric"><div class="icon">⚥</div><div><small data-i18n="gender">性別</small><strong data-i18n="female">女</strong></div></div>
+    <div class="metric"><div class="icon">●</div><div><small data-i18n="blood">血型</small><strong>O</strong></div></div>
+    <div class="metric"><div class="icon">↕</div><div><small data-i18n="height">身高</small><strong>172 cm</strong></div></div>
+    <div class="metric"><div class="icon">◉</div><div><small data-i18n="weight">體重</small><strong>50 kg</strong></div></div>
+    <div class="metric"><div class="icon">▣</div><div><small data-i18n="updateDate">更新日期</small><strong>2026/08/15</strong></div></div>
+  </section>
+
+  <div class="section-title"><h3 data-i18n="medicalSummary">醫療資訊</h3></div>
+  <section class="grid">
+    <article class="card" id="personal"><h4>♙ <span data-i18n="personalHistory">個人史</span></h4><ul><li data-i18n="personalPlaceholder">尚未填寫</li></ul><button class="detail-btn" data-modal="personalModal" data-i18n="details">編輯詳情</button></article>
+    <article class="card" id="disease"><h4>✚ <span data-i18n="disease">疾病史</span></h4><ul><li data-i18n="diseasePlaceholder">尚未填寫</li></ul><button class="detail-btn" data-modal="diseaseModal" data-i18n="details">編輯詳情</button></article>
+    <article class="card" id="family"><h4>♧ <span data-i18n="family">家族史</span></h4><ul><li data-i18n="familyPlaceholder">尚未填寫</li></ul><button class="detail-btn" data-modal="familyModal" data-i18n="details">編輯詳情</button></article>
+    <article class="card" id="surgery"><h4>✂ <span data-i18n="surgery">手術史</span></h4><ul><li data-i18n="surgeryPlaceholder">尚未填寫</li></ul><button class="detail-btn" data-modal="surgeryModal" data-i18n="details">編輯詳情</button></article>
+    <article class="card" id="medication"><h4>💊 <span data-i18n="medication">用藥史</span></h4><ul><li data-i18n="medicationPlaceholder">尚未填寫</li></ul><button class="detail-btn" data-modal="medicationModal" data-i18n="details">編輯詳情</button></article>
+    <article class="card" id="allergy"><h4>⚠ <span data-i18n="allergy">過敏史</span></h4><ul><li data-i18n="allergyPlaceholder">尚未填寫</li></ul><button class="detail-btn" data-modal="allergyModal" data-i18n="details">編輯詳情</button></article>
+
+    <article class="card report" id="reports"><h4>▣ <span data-i18n="reports">檢查報告</span></h4>
+      <div class="report-row"><span data-i18n="report1">尚未新增檢查報告</span><button class="detail-btn" data-modal="reportModal" data-i18n="add">新增</button></div>
+    </article>
+
+    <article class="card" id="vaccines"><h4>♟ <span data-i18n="vaccines">預防接種</span></h4><ul><li data-i18n="vaccinePlaceholder">尚未填寫</li></ul><button class="detail-btn" data-modal="vaccineModal" data-i18n="details">編輯詳情</button></article>
+    <article class="card" id="lifestyle"><h4>♡ <span data-i18n="lifestyle">生活習慣</span></h4><ul><li data-i18n="lifestylePlaceholder">尚未填寫</li></ul><button class="detail-btn" data-modal="lifestyleModal" data-i18n="details">編輯詳情</button></article>
+    <article class="card report emergency" id="emergency"><h4>☎ <span data-i18n="emergency">緊急聯絡人</span></h4><div class="report-row"><span data-i18n="contactPlaceholder">尚未填寫</span></div></article>
+    <article class="card report" id="notes"><h4>✎ <span data-i18n="notes">備註</span></h4><p style="color:#6d819d" data-i18n="notesPlaceholder">可記錄看診時想提醒醫師的重要事項。</p><button class="detail-btn" data-modal="notesModal" data-i18n="edit">編輯</button></article>
+  </section>
+  <div class="footer">🔒 <span data-i18n="footer">本頁面為靜態個人資料工具；資料預設只保存在此瀏覽器，不會自動上傳伺服器。醫療用途請以正式醫療紀錄為準。</span></div>
+</main>
+</div>
+</div>
+
+<div class="modal" id="modal"><div class="modal-box">
+  <div class="modal-head"><h3 id="modalTitle">編輯資料</h3><button class="close" id="close">✕</button></div>
+  <div class="form">
+    <label class="full">內容
+      <textarea id="modalText" placeholder="請輸入相關資訊，例如疾病名稱、年份、醫院、醫師或備註"></textarea>
+    </label>
+  </div>
+  <button class="save" id="save">儲存到本機</button>
+</div></div>
+<div class="toast" id="toast">已儲存</div>
+
+<script>
+const dict={
+zh:{title:"多國語言電子病歷",privacy:"健康資訊僅供本人使用",overview:"總覽",personal:"個人資料",personalHistory:"個人史",disease:"疾病史",family:"家族史",surgery:"手術史",medication:"用藥史",allergy:"過敏史",reports:"檢查報告",vaccines:"預防接種",lifestyle:"生活習慣",emergency:"緊急聯絡人",notes:"備註",export:"匯出／分享",hello:"您好，使用者 👋",updated:"最後更新",summary:"總覽資訊",demo:"範例資料，請替換成自己的資訊",age:"年齡",gender:"性別",female:"女",blood:"血型",height:"身高",weight:"體重",updateDate:"更新日期",medicalSummary:"醫療資訊",details:"編輯詳情",add:"新增",edit:"編輯",personalPlaceholder:"尚未填寫",diseasePlaceholder:"尚未填寫",familyPlaceholder:"尚未填寫",surgeryPlaceholder:"尚未填寫",medicationPlaceholder:"尚未填寫",allergyPlaceholder:"尚未填寫",report1:"尚未新增檢查報告",vaccinePlaceholder:"尚未填寫",lifestylePlaceholder:"尚未填寫",contactPlaceholder:"尚未填寫",notesPlaceholder:"可記錄看診時想提醒醫師的重要事項。",footer:"本頁面為靜態個人資料工具；資料預設只保存在此瀏覽器，不會自動上傳伺服器。醫療用途請以正式醫療紀錄為準。"},
+en:{title:"Multilingual Electronic Health Record",privacy:"Private health information",overview:"Overview",personal:"Personal Data",personalHistory:"Personal History",disease:"Medical History",family:"Family History",surgery:"Surgical History",medication:"Medication History",allergy:"Allergies",reports:"Test Reports",vaccines:"Vaccinations",lifestyle:"Lifestyle",emergency:"Emergency Contact",notes:"Notes",export:"Export / Share",hello:"Hello, User 👋",updated:"Last updated",summary:"Summary",demo:"Demo data — replace with your own information",age:"Age",gender:"Gender",female:"Female",blood:"Blood Type",height:"Height",weight:"Weight",updateDate:"Updated",medicalSummary:"Medical Information",details:"Edit Details",add:"Add",edit:"Edit",personalPlaceholder:"Not entered",diseasePlaceholder:"Not entered",familyPlaceholder:"Not entered",surgeryPlaceholder:"Not entered",medicationPlaceholder:"Not entered",allergyPlaceholder:"Not entered",report1:"No test reports added",vaccinePlaceholder:"Not entered",lifestylePlaceholder:"Not entered",contactPlaceholder:"Not entered",notesPlaceholder:"Record important points you want to tell your doctor.",footer:"Static personal health record tool. Data is stored in this browser by default and is not automatically uploaded. Use official medical records for clinical care."},
+ko:{title:"다국어 전자 건강 기록",privacy:"개인 건강 정보",overview:"개요",personal:"개인 정보",personalHistory:"개인력",disease:"질병력",family:"가족력",surgery:"수술력",medication:"복약력",allergy:"알레르기",reports:"검사 결과",vaccines:"예방접종",lifestyle:"생활 습관",emergency:"응급 연락처",notes:"메모",export:"내보내기 / 공유",hello:"안녕하세요, 사용자님 👋",updated:"최종 수정",summary:"요약 정보",demo:"예시 데이터 — 본인 정보로 변경하세요",age:"나이",gender:"성별",female:"여성",blood:"혈액형",height:"키",weight:"체중",updateDate:"업데이트",medicalSummary:"의료 정보",details:"상세 편집",add:"추가",edit:"편집",personalPlaceholder:"입력되지 않음",diseasePlaceholder:"입력되지 않음",familyPlaceholder:"입력되지 않음",surgeryPlaceholder:"입력되지 않음",medicationPlaceholder:"입력되지 않음",allergyPlaceholder:"입력되지 않음",report1:"검사 결과가 없습니다",vaccinePlaceholder:"입력되지 않음",lifestylePlaceholder:"입력되지 않음",contactPlaceholder:"입력되지 않음",notesPlaceholder:"의사에게 전달할 중요한 내용을 기록하세요.",footer:"정적 개인 건강 기록 도구입니다. 데이터는 기본적으로 이 브라우저에만 저장되며 자동 업로드되지 않습니다. 진료에는 공식 의료 기록을 사용하세요."},
+ja:{title:"多言語電子健康記録",privacy:"健康情報は本人専用",overview:"概要",personal:"個人情報",personalHistory:"個人歴",disease:"既往歴",family:"家族歴",surgery:"手術歴",medication:"服薬歴",allergy:"アレルギー",reports:"検査結果",vaccines:"予防接種",lifestyle:"生活習慣",emergency:"緊急連絡先",notes:"メモ",export:"エクスポート / 共有",hello:"こんにちは、ユーザーさん 👋",updated:"最終更新",summary:"概要情報",demo:"サンプルデータ — 自分の情報に置き換えてください",age:"年齢",gender:"性別",female:"女性",blood:"血液型",height:"身長",weight:"体重",updateDate:"更新日",medicalSummary:"医療情報",details:"詳細を編集",add:"追加",edit:"編集",personalPlaceholder:"未入力",diseasePlaceholder:"未入力",familyPlaceholder:"未入力",surgeryPlaceholder:"未入力",medicationPlaceholder:"未入力",allergyPlaceholder:"未入力",report1:"検査結果はありません",vaccinePlaceholder:"未入力",lifestylePlaceholder:"未入力",contactPlaceholder:"未入力",notesPlaceholder:"医師に伝えたい重要な事項を記録できます。",footer:"静的な個人健康記録ツールです。データは基本的にこのブラウザに保存され、自動的にアップロードされません。診療には正式な医療記録をご利用ください。"},
+vi:{title:"Hồ sơ sức khỏe điện tử đa ngôn ngữ",privacy:"Thông tin sức khỏe cá nhân",overview:"Tổng quan",personal:"Thông tin cá nhân",personalHistory:"Tiền sử cá nhân",disease:"Tiền sử bệnh",family:"Tiền sử gia đình",surgery:"Tiền sử phẫu thuật",medication:"Lịch sử dùng thuốc",allergy:"Dị ứng",reports:"Kết quả xét nghiệm",vaccines:"Tiêm chủng",lifestyle:"Lối sống",emergency:"Liên hệ khẩn cấp",notes:"Ghi chú",export:"Xuất / Chia sẻ",hello:"Xin chào, Người dùng 👋",updated:"Cập nhật lần cuối",summary:"Thông tin tổng quan",demo:"Dữ liệu mẫu — hãy thay bằng thông tin của bạn",age:"Tuổi",gender:"Giới tính",female:"Nữ",blood:"Nhóm máu",height:"Chiều cao",weight:"Cân nặng",updateDate:"Ngày cập nhật",medicalSummary:"Thông tin y tế",details:"Chỉnh sửa",add:"Thêm",edit:"Sửa",personalPlaceholder:"Chưa nhập",diseasePlaceholder:"Chưa nhập",familyPlaceholder:"Chưa nhập",surgeryPlaceholder:"Chưa nhập",medicationPlaceholder:"Chưa nhập",allergyPlaceholder:"Chưa nhập",report1:"Chưa có kết quả xét nghiệm",vaccinePlaceholder:"Chưa nhập",lifestylePlaceholder:"Chưa nhập",contactPlaceholder:"Chưa nhập",notesPlaceholder:"Ghi lại những điều quan trọng muốn nói với bác sĩ.",footer:"Công cụ hồ sơ sức khỏe cá nhân tĩnh. Dữ liệu mặc định chỉ lưu trong trình duyệt này và không tự động tải lên. Hãy sử dụng hồ sơ y tế chính thức khi khám chữa bệnh."}
+};
+
+let currentModal=null;
+const $=s=>document.querySelector(s);
+function applyLang(lang){
+  document.documentElement.lang=lang==="zh"?"zh-Hant":lang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key=el.dataset.i18n;
+    if(dict[lang][key]) el.textContent=dict[lang][key];
+  });
+  localStorage.setItem("ehrLanguage",lang);
+}
+$("#language").value=localStorage.getItem("ehrLanguage")||"zh";
+$("#language").addEventListener("change",e=>applyLang(e.target.value));
+applyLang($("#language").value);
+const profileDefaults={age:"15",gender:"female",blood:"O",height:"172 cm",weight:"50 kg"};
+Object.entries(profileDefaults).forEach(([k,v])=>{
+  if(!localStorage.getItem("profile_"+k)) localStorage.setItem("profile_"+k,v);
+});
+
+
+document.querySelectorAll("#nav button[data-target]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById(btn.dataset.target)?.scrollIntoView({behavior:"smooth",block:"start"});
+  });
+});
+
+document.querySelectorAll("[data-modal]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    currentModal=btn.dataset.modal;
+    $("#modalTitle").textContent=btn.closest(".card")?.querySelector("h4")?.innerText||"編輯資料";
+    $("#modalText").value=localStorage.getItem(currentModal)||"";
+    $("#modal").classList.add("show"); $("#modalText").focus();
+  });
+});
+$("#close").onclick=()=>$("#modal").classList.remove("show");
+$("#modal").addEventListener("click",e=>{if(e.target.id==="modal")$("#modal").classList.remove("show")});
+$("#save").onclick=()=>{
+  localStorage.setItem(currentModal,$("#modalText").value);
+  $("#modal").classList.remove("show");
+  $("#toast").classList.add("show"); setTimeout(()=>$("#toast").classList.remove("show"),1800);
+};
+$("#exportBtn").onclick=()=>{
+  const data={language:$("#language").value,createdAt:new Date().toISOString()};
+  ["personalModal","diseaseModal","familyModal","surgeryModal","medicationModal","allergyModal","reportModal","vaccineModal","lifestyleModal","notesModal"].forEach(k=>data[k]=localStorage.getItem(k)||"");
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="my-electronic-health-record.json";a.click();URL.revokeObjectURL(a.href);
+};
+</script>
+</body>
+</html>
